@@ -1,13 +1,13 @@
 require("dotenv").config();
 const sgMail = require("@sendgrid/mail");
 
-sgMail.setApiKey(process.env.SENDGRID_API ?? "");
+sgMail.setApiKey(process.env.SENDGRID_API);
 
 const { createClient } = require("@supabase/supabase-js");
 
 const supabase = createClient(
-  process.env.SUPABASE_URL ?? "",
-  process.env.SUPABASE_KEY ?? "",
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_KEY,
   {
     auth: {
       persistSession: false,
@@ -43,7 +43,7 @@ async function handleNewUser(payload) {
 
   const msg = {
     to: email_address,
-    from: process.env.FROM_EMAIL ?? "",
+    from: process.env.FROM_EMAIL,
     dynamic_template_data: {
       user_display_name: displayname,
       rank: `${rank}${getNumberSuffix(rank)}`,
