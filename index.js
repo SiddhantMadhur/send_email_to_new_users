@@ -1,67 +1,60 @@
 require("dotenv").config();
-import * as sgMail from '@sendgrid/mail'
+const sgMail = require("@sendgrid/mail");
 
-sgMail.setApiKey(process.env.SENDGRID_API??"")
+sgMail.setApiKey(process.env.SENDGRID_API ?? "");
 
-
-import { RealtimePostgresInsertPayload, createClient } from "@supabase/supabase-js";
+const { createClient } = require("@supabase/supabase-js");
 
 const supabase = createClient(
   process.env.SUPABASE_URL ?? "",
   process.env.SUPABASE_KEY ?? "",
   {
     auth: {
-        persistSession: false
-    }
+      persistSession: false,
+    },
   }
 );
 
+function getNumberSuffix(num) {
+  var array = ("" + num).split("").reverse(); // E.g. 123 = array("3","2","1")
 
-function getNumberSuffix(num)
-{
-    var array = ("" + num).split("").reverse(); // E.g. 123 = array("3","2","1")
-    
-    if (array[1] != "1") { // Number is not in the teens
-        switch (array[0]) {
-            case "1": return "st";
-            case "2": return "nd";
-            case "3": return "rd";
-        }
+  if (array[1] != "1") {
+    // Number is not in the teens
+    switch (array[0]) {
+      case "1":
+        return "st";
+      case "2":
+        return "nd";
+      case "3":
+        return "rd";
     }
-    
-    return "th";
+  }
+
+  return "th";
 }
 
-
 /**
- * 
+ *
  * @param payload RealtimePostgresInsertPayload from a Supabase subcribe event
  */
 async function handleNewUser(payload) {
-    console.log('Detected User')
-    const {
-        displayname,
-        rank,
-        email_address
-    } = payload.new
-    
-    const msg = {
-        to: email_address,
-        from: process.env.FROM_EMAIL??"",
-        dynamic_template_data: {
-            "user_display_name": displayname,
-            "rank": `${rank}${getNumberSuffix(rank)}`
-        },
-        template_id: process.env.SENDGRID_TEMPLATE_ID,
-    }
+  console.log("Detected User");
+  const { displayname, rank, email_address } = payload.new;
 
-   // @ts-ignore
-    sgMail.send(msg)
-    .then(()=>{
-        console.log("Email sent to ", displayname, "{", email_address, "}")
-    })
+  const msg = {
+    to: email_address,
+    from: process.env.FROM_EMAIL ?? "",
+    dynamic_template_data: {
+      user_display_name: displayname,
+      rank: `${rank}${getNumberSuffix(rank)}`,
+    },
+    template_id: process.env.SENDGRID_TEMPLATE_ID,
+  };
 
-
+  // @ts-ignore
+  sgMail.send(msg).then(() => {
+    console.log("Email sent to ", displayname, "{", email_address, "}");
+  });
 }
 
 function subscribeToChanges() {
@@ -76,7 +69,7 @@ function subscribeToChanges() {
         table: "profiles",
       },
       (payload) => {
-        handleNewUser(payload)
+        handleNewUser(payload);
       }
     )
     .subscribe();
