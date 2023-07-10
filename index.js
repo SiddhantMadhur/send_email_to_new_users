@@ -17,7 +17,7 @@ const supabase = createClient(
 );
 
 
-function getNumberSuffix(num: number)
+function getNumberSuffix(num)
 {
     var array = ("" + num).split("").reverse(); // E.g. 123 = array("3","2","1")
     
@@ -37,11 +37,7 @@ function getNumberSuffix(num: number)
  * 
  * @param payload RealtimePostgresInsertPayload from a Supabase subcribe event
  */
-async function handleNewUser(
-  payload: RealtimePostgresInsertPayload<{
-    [key: string]: any;
-  }>
-) {
+async function handleNewUser(payload) {
     console.log('Detected User')
     const {
         displayname,
